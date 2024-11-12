@@ -105,11 +105,14 @@
 
     <script>
         // Function to fetch geolocation data
-        fetch('https://ip-api.com/json/')
+        fetch('https://api.ip-api.com/json/2c37ef80445ae5')  // Replace with your actual API key
     .then(response => response.json())
     .then(data => {
-        if (data && data.lat && data.lon) {  // Check if lat and lon are available
-            // Update IP data
+        if (data.status === 'fail') {
+            console.error('Error fetching IP data:', data.message);
+        } else {
+            // Handle the valid data response here
+            console.log(data);  // Log the response to check the data
             document.getElementById('ip').innerText = `IP Address: ${data.query}`;
             document.getElementById('country').innerText = `Country: ${data.country}`;
             document.getElementById('region').innerText = `State: ${data.regionName}`;
@@ -117,8 +120,6 @@
             document.getElementById('zip').innerText = `Zip Code: ${data.zip || 'N/A'}`;
             document.getElementById('latlong').innerText = `Latitude and Longitude: ${data.lat}, ${data.lon}`;
             document.getElementById('timezone').innerText = `Timezone: ${data.timezone}`;
-
-            // Displaying the current time
             const currentTime = new Date().toLocaleTimeString();
             document.getElementById('time').innerText = `Current Time: ${currentTime}`;
 
@@ -155,7 +156,7 @@
             L.marker([data.lat, data.lon]).addTo(map)
                 .bindPopup(`<b>Location:</b> ${data.city}, ${data.country}`)
                 .openPopup();
-        } else {
+        }  {
             console.error("Invalid data received from IP API:", data);
             // Optionally, display an error message to the user
             alert("Failed to fetch location data. Please try again.");
