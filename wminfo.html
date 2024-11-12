@@ -6,7 +6,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Host+Grotesk:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-    <style> 
+    <style>
         body {
             font-family: "Host Grotesk", sans-serif;
             font-weight: 400;
@@ -27,25 +27,16 @@
             display: flex;
             justify-content: space-between;
             width: 100%;
-            margin-bottom: 20px; /* Adds space between the info-boxes and the map */
+            margin-bottom: 20px;
         }
 
-        .info-box {
+        .info-box, .info-box2 {
             background: rgba(0, 0, 0, 0.6);
             padding: 20px;
             border-radius: 10px;
-            margin-right: 20px; /* Adds space between info-boxes */
+            margin-right: 20px;
             text-align: left;
-            width: 24%; /* Set width so they can fit side by side */
-        }
-
-        .info-box2 {
-            background: rgba(0, 0, 0, 0.6);
-            padding: 20px;  /* Adjust padding as needed */
-            border-radius: 10px;
-            text-align: center;
-            width: 25%; /* Keep it as is or adjust width if needed */
-            margin-left: 0; /* Removed left margin to eliminate extra space */
+            width: 24%;
         }
 
         .bottom-text {
@@ -63,110 +54,98 @@
             height: 400px;
             margin-top: 20px;
             border-radius: 10px;
-            background-color: #ddd; /* Added background color to make sure it shows up */
+            background-color: #ddd;
         }
     </style>
 </head>
 
 <body>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <div class="container">
-        <!-- Info Box 1 (left side) -->
         <div class="info-box">
             <h1>Here's your info: </h1>
-            <div class="info-item" id="ip"></div>
-            <div class="info-item" id="country"></div>
-            <div class="info-item" id="region"></div>
-            <div class="info-item" id="city"></div>
-            <div class="info-item" id="zip"></div>
-            <div class="info-item" id="latlong"></div>
-            <div class="info-item" id="timezone"></div>
-            <div class="info-item" id="time"></div>
-            <div class="info-item" id="device"></div>
-            <div class="info-item" id="browser"></div> <!-- Added browser info -->
+            <div class="info-item" id="ip">IP Address: N/A</div>
+            <div class="info-item" id="country">Country: N/A</div>
+            <div class="info-item" id="region">State: N/A</div>
+            <div class="info-item" id="city">City: N/A</div>
+            <div class="info-item" id="zip">Zip Code: N/A</div>
+            <div class="info-item" id="latlong">Latitude and Longitude: N/A</div>
+            <div class="info-item" id="timezone">Timezone: N/A</div>
+            <div class="info-item" id="time">Current Time: N/A</div>
+            <div class="info-item" id="device">Device Type: N/A</div>
+            <div class="info-item" id="browser">Browser: N/A</div>
         </div>
         
-        <!-- Info Box 2 (right side) -->
         <div class="info-box2">
             <h1>What's the point of this?</h1>
-            <h3>Ever wanted to know what type of information being sent to the website owners?
-                well now you can :D </h3>
-                <h4>         </h4>
-                <h3>You can also use this to check if the vpn works. </h3>
-                <h1>       </h1>
-                <h5>Made by <a href="https://github.com/slmlytf">slmly</a>
-                </h5>
+            <h3>Ever wanted to know what type of information is being sent to the website owners? Well now you can :D</h3>
+            <h3>You can also use this to check if the VPN works.</h3>
+            <h5>Made by <a href="https://github.com/slmlytf">slmly</a></h5>
         </div>
-        
     </div>
 
-    <!-- Map container for Leaflet -->
     <div id="map"></div>
 
     <script>
-        // Function to fetch geolocation data
-        fetch('https://api.ip-api.com/json/2c37ef80445ae5')  // Replace with your actual API key
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === 'fail') {
-            console.error('Error fetching IP data:', data.message);
-        } else {
-            // Handle the valid data response here
-            console.log(data);  // Log the response to check the data
-            document.getElementById('ip').innerText = `IP Address: ${data.query}`;
-            document.getElementById('country').innerText = `Country: ${data.country}`;
-            document.getElementById('region').innerText = `State: ${data.regionName}`;
-            document.getElementById('city').innerText = `City: ${data.city}`;
-            document.getElementById('zip').innerText = `Zip Code: ${data.zip || 'N/A'}`;
-            document.getElementById('latlong').innerText = `Latitude and Longitude: ${data.lat}, ${data.lon}`;
-            document.getElementById('timezone').innerText = `Timezone: ${data.timezone}`;
-            const currentTime = new Date().toLocaleTimeString();
-            document.getElementById('time').innerText = `Current Time: ${currentTime}`;
+        // Replace 'YOUR_TOKEN_HERE' with your actual ipinfo.io token
+        const ipInfoUrl = 'https://ipinfo.io?token=2c37ef80445ae5';
 
-            // Determining the device type
-            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-            document.getElementById('device').innerText = `Device Type: ${isMobile ? 'Mobile' : 'Desktop'}`;
+        // Fetch data from ipinfo.io
+        fetch(ipInfoUrl)
+            .then(response => response.json())
+            .then(data => {
+                const { ip, country, region, city, postal, loc, timezone } = data;
+                const [lat, lon] = loc.split(',');
 
-            // Get browser info
-            const userAgent = navigator.userAgent;
-            let browserName = "Unknown Browser";
-            if (userAgent.indexOf("Chrome") > -1) {
-                browserName = "Chrome";
-            } else if (userAgent.indexOf("Firefox") > -1) {
-                browserName = "Firefox";
-            } else if (userAgent.indexOf("Safari") > -1) {
-                browserName = "Safari";
-            } else if (userAgent.indexOf("Edge") > -1) {
-                browserName = "Edge";
-            } else if (userAgent.indexOf("MSIE") > -1 || userAgent.indexOf("Trident") > -1) {
-                browserName = "Internet Explorer";
-            }
-            document.getElementById('browser').innerText = `Browser: ${browserName}`;
+                // Display IP and location info
+                document.getElementById('ip').innerText = `IP Address: ${ip}`;
+                document.getElementById('country').innerText = `Country: ${country}`;
+                document.getElementById('region').innerText = `State: ${region}`;
+                document.getElementById('city').innerText = `City: ${city}`;
+                document.getElementById('zip').innerText = `Zip Code: ${postal || 'N/A'}`;
+                document.getElementById('latlong').innerText = `Latitude and Longitude: ${lat}, ${lon}`;
+                document.getElementById('timezone').innerText = `Timezone: ${timezone}`;
+                document.getElementById('time').innerText = `Current Time: ${new Date().toLocaleTimeString()}`;
 
-            // Initialize Leaflet map only if lat and lon are valid
-            const map = L.map('map').setView([data.lat, data.lon], 10);
+                // Device type detection
+                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                document.getElementById('device').innerText = `Device Type: ${isMobile ? 'Mobile' : 'Desktop'}`;
 
-            // Add OpenStreetMap tile layer
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 18,
-                attribution: '© OpenStreetMap contributors'
-            }).addTo(map);
+                // Browser detection
+                const userAgent = navigator.userAgent;
+                let browserName = "Unknown Browser";
+                if (userAgent.indexOf("Chrome") > -1) {
+                    browserName = "Chrome";
+                } else if (userAgent.indexOf("Firefox") > -1) {
+                    browserName = "Firefox";
+                } else if (userAgent.indexOf("Safari") > -1) {
+                    browserName = "Safari";
+                } else if (userAgent.indexOf("Edge") > -1) {
+                    browserName = "Edge";
+                } else if (userAgent.indexOf("MSIE") > -1 || userAgent.indexOf("Trident") > -1) {
+                    browserName = "Internet Explorer";
+                }
+                document.getElementById('browser').innerText = `Browser: ${browserName}`;
 
-            // Add a marker for the estimated location
-            L.marker([data.lat, data.lon]).addTo(map)
-                .bindPopup(`<b>Location:</b> ${data.city}, ${data.country}`)
-                .openPopup();
-        }  {
-            console.error("Invalid data received from IP API:", data);
-            // Optionally, display an error message to the user
-            alert("Failed to fetch location data. Please try again.");
-        }
-    })
-    .catch(error => {
-        console.error('Error fetching IP data:', error);
-        alert("An error occurred while fetching data.");
-    });
+                // Initialize map with fetched coordinates
+                const map = L.map('map').setView([lat, lon], 10);
 
+                // Add OpenStreetMap tile layer
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 18,
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(map);
+
+                // Add marker at the user's location
+                L.marker([lat, lon]).addTo(map)
+                    .bindPopup(`<b>Location:</b> ${city}, ${country}`)
+                    .openPopup();
+            })
+            .catch(error => {
+                console.error('Error fetching IP info:', error);
+                alert('Failed to retrieve your IP information.');
+            });
     </script>
 </body>
 </html>
