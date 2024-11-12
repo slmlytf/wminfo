@@ -106,56 +106,66 @@
     <script>
         // Function to fetch geolocation data
         fetch('https://ip-api.com/json/')
-            .then(response => response.json())
-            .then(data => {
-                // Update IP data
-                document.getElementById('ip').innerText = `IP Address: ${data.query}`;
-                document.getElementById('country').innerText = `Country: ${data.country}`;
-                document.getElementById('region').innerText = `State: ${data.regionName}`;
-                document.getElementById('city').innerText = `City: ${data.city}`;
-                document.getElementById('zip').innerText = `Zip Code: ${data.zip || 'N/A'}`;
-                document.getElementById('latlong').innerText = `Latitude and Longitude: ${data.lat}, ${data.lon}`;
-                document.getElementById('timezone').innerText = `Timezone: ${data.timezone}`;
+    .then(response => response.json())
+    .then(data => {
+        if (data && data.lat && data.lon) {  // Check if lat and lon are available
+            // Update IP data
+            document.getElementById('ip').innerText = `IP Address: ${data.query}`;
+            document.getElementById('country').innerText = `Country: ${data.country}`;
+            document.getElementById('region').innerText = `State: ${data.regionName}`;
+            document.getElementById('city').innerText = `City: ${data.city}`;
+            document.getElementById('zip').innerText = `Zip Code: ${data.zip || 'N/A'}`;
+            document.getElementById('latlong').innerText = `Latitude and Longitude: ${data.lat}, ${data.lon}`;
+            document.getElementById('timezone').innerText = `Timezone: ${data.timezone}`;
 
-                // Displaying the current time
-                const currentTime = new Date().toLocaleTimeString();
-                document.getElementById('time').innerText = `Current Time: ${currentTime}`;
+            // Displaying the current time
+            const currentTime = new Date().toLocaleTimeString();
+            document.getElementById('time').innerText = `Current Time: ${currentTime}`;
 
-                // Determining the device type
-                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-                document.getElementById('device').innerText = `Device Type: ${isMobile ? 'Mobile' : 'Desktop'}`;
+            // Determining the device type
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            document.getElementById('device').innerText = `Device Type: ${isMobile ? 'Mobile' : 'Desktop'}`;
 
-                // Get browser info
-                const userAgent = navigator.userAgent;
-                let browserName = "Unknown Browser";
-                if (userAgent.indexOf("Chrome") > -1) {
-                    browserName = "Chrome";
-                } else if (userAgent.indexOf("Firefox") > -1) {
-                    browserName = "Firefox";
-                } else if (userAgent.indexOf("Safari") > -1) {
-                    browserName = "Safari";
-                } else if (userAgent.indexOf("Edge") > -1) {
-                    browserName = "Edge";
-                } else if (userAgent.indexOf("MSIE") > -1 || userAgent.indexOf("Trident") > -1) {
-                    browserName = "Internet Explorer";
-                }
-                document.getElementById('browser').innerText = `Browser: ${browserName}`;
+            // Get browser info
+            const userAgent = navigator.userAgent;
+            let browserName = "Unknown Browser";
+            if (userAgent.indexOf("Chrome") > -1) {
+                browserName = "Chrome";
+            } else if (userAgent.indexOf("Firefox") > -1) {
+                browserName = "Firefox";
+            } else if (userAgent.indexOf("Safari") > -1) {
+                browserName = "Safari";
+            } else if (userAgent.indexOf("Edge") > -1) {
+                browserName = "Edge";
+            } else if (userAgent.indexOf("MSIE") > -1 || userAgent.indexOf("Trident") > -1) {
+                browserName = "Internet Explorer";
+            }
+            document.getElementById('browser').innerText = `Browser: ${browserName}`;
 
-                // Initialize Leaflet map
-                const map = L.map('map').setView([data.lat, data.lon], 10);
+            // Initialize Leaflet map only if lat and lon are valid
+            const map = L.map('map').setView([data.lat, data.lon], 10);
 
-                // Add OpenStreetMap tile layer
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    maxZoom: 18,
-                    attribution: '© OpenStreetMap contributors'
-                }).addTo(map);
+            // Add OpenStreetMap tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 18,
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
 
-                // Add a marker for the estimated location
-                L.marker([data.lat, data.lon]).addTo(map)
-                    .bindPopup(`<b>Location:</b> ${data.city}, ${data.country}`)
-                    .openPopup();
-            })
-            .catch(error => console.error('Error fetching IP data:', error));
+            // Add a marker for the estimated location
+            L.marker([data.lat, data.lon]).addTo(map)
+                .bindPopup(`<b>Location:</b> ${data.city}, ${data.country}`)
+                .openPopup();
+        } else {
+            console.error("Invalid data received from IP API:", data);
+            // Optionally, display an error message to the user
+            alert("Failed to fetch location data. Please try again.");
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching IP data:', error);
+        alert("An error occurred while fetching data.");
+    });
+
     </script>
 </body>
 </html>
